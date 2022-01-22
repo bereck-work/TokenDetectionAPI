@@ -20,7 +20,7 @@ poetry install
 ```
 As we have included a `pyproject.toml` file, it will install the dependencies automatically.
 
-## Bot Configuration
+## API Configuration
 You can configure the app by using the file called ``config.yml`` in the ``config`` directory.
 You need to pass the host, port for uvicorn to run the server.
 ```yaml
