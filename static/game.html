@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Never gonna give you up.</title>
+    </head>
+    <body>
+		<link rel="stylesheet" type="text/css" href="/static/css/game_ui.css">
+		<script src="/static/js/game.js"></script>
+        <!-- App Wrapper -->
+        <div class="wrapper">
+            <div class="game-window">
+                <div class="message-container">
+                    <div class="game-start-message">
+                        Time Passed <span id="timer">0s</span>
+                    </div>
+                </div>
+                <div class="game-board-container">
+                    <div class="game-board">
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                        <div class="box"></div>
+                    </div>
+                </div>
+                <div class="start-screen screen" id="startScreen">
+
+                    <div class="game-title">
+                        Bored?, Try this shit.
+                    </div>
+
+                    <div class="msg">
+                        Your goal is to click boxes from number 1 to 25 in ascending order,
+                        if you miss or click anything else you loose.<br> Fuck you.
+                    </div>
+                    <div class="msg">
+                        Get your best score !
+                    </div>
+
+                    <button onclick="statGame(event)">Start</button>
+                </div>
+
+                <div class="game-over-screen screen" id="gameOverScreen" data-state="hidden">
+                    <div class="screen-title">
+                        HAHA, YOU LOST, FUCK YOU.
+                    </div>
+
+                    <div class="msg">Sike, you are dumb!</div>
+
+                    <button onclick="statGame(event)">Try Again</button>
+                </div>
+
+                <div class="score-screen screen" id="scoreScreen" data-state="hidden">
+                    <div class="screen-title">
+                        YOU WON
+                    </div>
+
+                    <div class="msg">Your Time is <span id="scorePageTime"></span></div>
+
+                    <button onclick="statGame(event)">Play Again</button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

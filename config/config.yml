@@ -1,0 +1,11 @@
+Settings:
+  host: "127.0.0.1"
+  port: 7000
+  preview: "true"  # Preview mode opens a ngrok tunnel that portforwards the localhost address and port, so that the world can see it. Although, please don't use this in production
+
+Redis:
+  address: "..."
+  port: 1111
+  database: 0
+  username: "..."
+  password: "..."
