@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from core.image import CleanImage
 from core.parser import TokenParser
 from utils.exceptions import InvalidImage
-from utils.helpers import executor_function
+from utils.helpers import executor_function, Config
 
 
 class DetectionAPI(FastAPI):
@@ -24,7 +24,9 @@ class DetectionAPI(FastAPI):
         )
         self.cleaner = CleanImage()
         self.parser = TokenParser()
+        self.config = Config()
         self.logger = logger
+        self.debug = self.config.fastapi_debug_mode
 
     @executor_function
     def read_image(self, data_in_bytes: BytesIO) -> str:
@@ -67,7 +69,6 @@ class DetectionAPI(FastAPI):
         -------
         JSONResponse
             A dictionary is returned containing data of the token if found or an error message if not.
-
         """
 
         try:
@@ -79,18 +80,22 @@ class DetectionAPI(FastAPI):
                     raise fastapi.exceptions.HTTPException(
                         status_code=410, detail="Image resource not found."
                     )
-                image_data = self.read_image(
+                image_data = await self.read_image(
                     data_in_bytes=BytesIO(await response.read())
                 )
 
-                data_from_image = await self.parser.validate_token(image_data)
+                data_from_image = await self.parser.validate_token(
+                    image_data, data_parsed_from_type="image"
+                )
                 json_data = data_from_image.jsonify()
                 return JSONResponse(
                     content=json_data, status_code=200, media_type="application/json"
                 )
         except aiohttp.InvalidURL:
             self.logger.error("Image url is not a valid url.")
-            raise fastapi.exceptions.HTTPException(status_code=400, detail="Invalid Image URL provided.")
+            raise fastapi.exceptions.HTTPException(
+                status_code=400, detail="Invalid Image URL provided."
+            )
 
     async def search_token_in_text(self, text: typing.AnyStr) -> JSONResponse:
         """
@@ -105,9 +110,10 @@ class DetectionAPI(FastAPI):
         -------
         JSONResponse
             A dictionary is returned containing data of the token if found or an error message if not.
-
         """
-        json_data = (await self.parser.validate_token(text)).jsonify()
+        json_data = (
+            await self.parser.validate_token(text, data_parsed_from_type="text")
+        ).jsonify()
         return JSONResponse(
             content=json_data, status_code=200, media_type="application/json"
         )
