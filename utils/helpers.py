@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import functools
 import json
+import sys
 import typing
 
 import yaml
@@ -14,16 +15,16 @@ class Config:
     A class to load and store configuration data from a YAML file.
     """
 
-    def __init__(self, file: str = "./config/config.yml"):
+    def __init__(self):
         self.logger = logger
-        with open(file, encoding="utf-8") as f:
+        self.config_file_path = "./config/config.yml"
+        with open(self.config_file_path, encoding="utf-8") as f:
             self.data = yaml.load(f, Loader=yaml.FullLoader)
 
     @property
     def port(self) -> typing.Optional[int]:
         """
         This property returns the port of the app.
-
 
         Returns
         -------
@@ -33,7 +34,7 @@ class Config:
         port = self.data["Settings"]["port"]
         if port is None:
             self.logger.error("Port is not set in the config.yml file.")
-            exit(code=1)
+            sys.exit()
 
         return int(port)
 
@@ -42,23 +43,21 @@ class Config:
         """
         This property returns the host defined for the app.
 
-
         Returns
         -------
         str
             The host address.
         """
         data = self.data["Settings"]["host"]
-        if data == "":
+        if data is None:
             self.logger.error("No host found in config.yml")
-            exit(code=1)
+            sys.exit(1)
         return data
 
     @property
     def preview(self) -> typing.Optional[bool]:
         """
-        This property returns the preview mode.
-
+        This property returns the state of preview mode setting in the config.yml file.
 
         Returns
         -------
@@ -67,18 +66,47 @@ class Config:
         """
         mode = self.data["Settings"]["preview"]
         if mode is None:
-            self.logger.error("Preview mode is not set in the config.yml file.")
-            exit(code=1)
-        if mode == "true":
+            self.logger.error("Preview setting is not set in the config.yml file.")
+            sys.exit(1)
+        if mode.lower() == "on":
             return True
-        elif mode == "false":
+        elif mode.lower() == "off":
             return False
+        else:
+            self.logger.error(
+                "Invalid choice for preview setting in the config.yml file. "
+                "Accepted values are 'on' or 'off'."
+            )
+            sys.exit(1)
+
+    @property
+    def fastapi_debug_mode(self) -> typing.Optional[bool]:
+        """
+        This property returns the state of fastapi debug setting.
+
+        Returns
+        -------
+        bool
+            The fastapi debug mode.
+        """
+        mode = self.data["Settings"]["debug"]
+        if mode is None:
+            self.logger.error("Fastapi debug mode is not set in the config.yml file.")
+            sys.exit(1)
+        if mode.lower() == "on":
+            return True
+        elif mode.lower() == "off":
+            return False
+        else:
+            self.logger.error(
+                "Invalid choice for debug mode in the config.yml file. Accepted values are 'on' or 'off'."
+            )
+            sys.exit(1)
 
     @property
     def redis_address(self) -> typing.Optional[str]:
         """
         This property returns the redis address.
-
 
         Returns
         -------
@@ -86,9 +114,9 @@ class Config:
             The redis url.
         """
         data = self.data["Redis"]["address"]
-        if data == "":
+        if data is None:
             self.logger.error("No redis address found in config.yml")
-            exit(code=1)
+            sys.exit(1)
         return data
 
     @property
@@ -96,16 +124,15 @@ class Config:
         """
         This property returns the redis port.
 
-
         Returns
         -------
         int
             The redis port.
         """
         data = self.data["Redis"]["port"]
-        if data == "":
+        if data is None:
             self.logger.error("No redis port found in config.yml")
-            exit(code=1)
+            sys.exit(1)
         return int(data)
 
     @property
@@ -113,16 +140,15 @@ class Config:
         """
         This property returns the redis password.
 
-
         Returns
         -------
         str
             The redis password.
         """
         data = self.data["Redis"]["password"]
-        if data == "":
+        if data is None:
             self.logger.error("No redis password found in config.yml")
-            exit(code=1)
+            sys.exit(1)
         return data
 
     @property
@@ -130,23 +156,21 @@ class Config:
         """
         This property returns the redis database.
 
-
         Returns
         -------
         int
             The redis database.
         """
         data = self.data["Redis"]["database"]
-        if data == "":
-            self.logger.error("No redis database found in config.yml")
-            exit(code=1)
+        if data is None:
+            self.logger.error("Redis database index not provided in config.yml")
+            sys.exit(1)
         return int(data)
 
     @property
     def redis_username(self) -> typing.Optional[str]:
         """
         This property returns the redis username.
-
 
         Returns
         -------
@@ -156,7 +180,7 @@ class Config:
         data = self.data["Redis"]["username"]
         if data == "":
             self.logger.error("No redis username found in config.yml")
-            exit(code=1)
+            sys.exit(1)
         return data
 
     def __repr__(self):
