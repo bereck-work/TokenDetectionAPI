@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from src.app import DetectionAPI
-from utils.helpers import ImageRequest, TextRequest
+from utils.helpers import ImageRequest, TextRequest, Token
 
 app = DetectionAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -55,7 +55,7 @@ async def read_root():
 @app.get("/game", response_class=HTMLResponse)
 async def game():
     """
-    Plays a game.
+    This endpoint loads a game. Visit the endpoint for more information.
 
     Returns
     -------
@@ -69,7 +69,7 @@ async def game():
 
 
 @app.post(
-    "/token/image/{url}", dependencies=[Depends(RateLimiter(times=1, seconds=20))]
+    "/token/image/{url}", dependencies=[Depends(RateLimiter(times=1, seconds=20))], response_model=Token
 )
 async def read_token_from_image(
     image: ImageRequest,
@@ -77,7 +77,6 @@ async def read_token_from_image(
     """
     This endpoint reads an image from an url and tries extract the token from it, this uses tesseract-ocr, so it might
     not be accurate all the time.
-
 
     Parameters
     ----------
@@ -90,11 +89,11 @@ async def read_token_from_image(
     """
 
     data = await app.search_token_in_image(image.url)
-    return data
+    return data.body
 
 
 @app.post(
-    "/token/text/{text}", dependencies=[Depends(RateLimiter(times=3, seconds=20))]
+    "/token/text/{text}", dependencies=[Depends(RateLimiter(times=3, seconds=20))], response_model=Token
 )
 async def read_token_from_text(
     data: TextRequest,
