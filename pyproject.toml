@@ -8,7 +8,6 @@ license = "ISC"
 [tool.poetry.dependencies]
 python = "^3.9"
 fastapi = "^0.70.1"
-uvicorn = "^0.16.0"
 amogus = "^0.1"
 PyYAML = "^6.0"
 requests = "^2.27.1"
@@ -18,6 +17,7 @@ numpy = "^1.22.1"
 opencv-python-headless = "4.5.4.60"
 fastapi-limiter = {git = "https://github.com/long2ice/fastapi-limiter.git"}
 pytesseract = "^0.3.8"
+uvicorn = {extras = ["standard"], version = "^0.17.0"}
 
 
 [tool.poetry.dev-dependencies]
