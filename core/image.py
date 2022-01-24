@@ -18,8 +18,8 @@ class CleanImage:
     def __init__(self):
         self.image_binary = BytesIO
 
-    @classmethod
-    def clean(cls, image_as_bytes: BytesIO) -> BytesIO:
+    @staticmethod
+    def clean(image_as_bytes: BytesIO) -> BytesIO:
         """
         A method that takes an image and returns a cleaned version of it by removing noise and smoothing it.
 
@@ -42,7 +42,11 @@ class CleanImage:
                 logger.error(e)
                 raise InvalidImage("The image could not be converted to a PIL image.")
 
-            image = ImageOps.grayscale(image).filter(ImageFilter.UnsharpMask).filter(ImageFilter.DETAIL)
+            image = (
+                ImageOps.grayscale(image)
+                .filter(ImageFilter.UnsharpMask)
+                .filter(ImageFilter.DETAIL)
+            )
             image = (
                 ImageOps.posterize(image, 4)
                 .filter(ImageFilter.SMOOTH)
@@ -50,6 +54,7 @@ class CleanImage:
             )
             image.save(image_binary, format="PNG")
             image_binary.seek(0)
+
             return image_binary
 
         else:
@@ -63,7 +68,7 @@ class CleanImage:
         Parameters
         ----------
         image_as_bytes : BytesIO
-            The image to be converted to a numpy array.
+            The image to be converted to a numpy array. The image must be in the BytesIO format.
 
         Returns
         -------
