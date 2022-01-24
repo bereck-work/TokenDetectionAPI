@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from threading import Thread
 
 import uvicorn
@@ -11,6 +12,7 @@ class Process:
     """
     A class that handles the process of running the server.
     """
+
     def __init__(self):
         self.config = Config()
         self.logger = logger
@@ -42,14 +44,24 @@ class Process:
         """
         This method checks if the preview mode is enabled.
 
-        Returns:
-            bool: True if preview mode is enabled, False otherwise.
+        Returns
+        -------
+        bool
+            True if preview mode is enabled, False otherwise.
         """
         if self.config.preview:
-            self.logger.info("Preview mode enabled.")
+            self.logger.info(
+                "Preview mode is enabled. A ngrok tunnel will be created for this session and "
+                "will portfoward the localhost server.\nTo be able to view the API, please open "
+                "https://dashboard.ngrok.com/endpoints/status in your browser, and click on one "
+                "of the links that has been created. This feature should not be used in production."
+            )
             return True
         else:
-            self.logger.info("Preview mode disabled.")
+            self.logger.info(
+                "Preview mode is disabled. Ngrok tunnel will not be started and the API will be "
+                "available only on localhost."
+            )
             return False
 
     def start_ngrok(self):
@@ -71,11 +83,13 @@ class Process:
                 self.logger.success(
                     f"{self.baseprogram} tunnel started successfully. {ngrok_process.stdout}"
                 )
+            if ngrok_process.returncode == -2:
+                return  # signal means SIGKILL aka the process was killed.
             else:
                 self.logger.error(
                     f"{self.baseprogram} tunnel failed to start. Error: {ngrok_process.stdout}"
                 )
-                exit(1)
+                sys.exit(1)
         else:
             return
 
