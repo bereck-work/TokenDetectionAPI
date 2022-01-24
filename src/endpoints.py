@@ -5,11 +5,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from src.app import DetectionAPI
-from utils.helpers import ImageRequest, TextRequest, Config
+from utils.helpers import ImageRequest, TextRequest
 
-app = DetectionAPI(debug=True)
+app = DetectionAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.config = Config()
 
 
 @app.on_event("startup")
@@ -18,7 +17,7 @@ async def startup():
     This method is called when the server starts up, it initializes a redis connection.
     """
     redis = await aioredis.from_url(
-        app.config.redis_address,
+        url=app.config.redis_address,
         db=app.config.redis_db,
         username=app.config.redis_username,
         password=app.config.redis_password,
