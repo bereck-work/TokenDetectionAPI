@@ -1,11 +1,12 @@
 Settings:
-  host: "127.0.0.1"
-  port: 7000
-  preview: "true"  # Preview mode opens a ngrok tunnel that portforwards the localhost address and port, so that the world can see it. Although, please don't use this in production
+  host: "127.0.0.1" # Hostname or IP address.
+  port: 7000  # The port to listen on.
+  debug: "off"  # This is enables debug mode in fastAPI, which is useful for development. Set to "on" when needed.
+  preview: "off"  # Preview mode opens a ngrok tunnel that portforwards the localhost address and port, so that the world can see it. Although, please don't use this in production. Set to "on" if needed.
 
 Redis:
-  address: "..."
-  port: 1111
-  database: 0
-  username: "..."
-  password: "..."
+  address: "redis://..."  # This is the address of the redis server. Make sure to add redis:// to the beginning of the address.
+  port: 19484  # Set this to the port of the redis server.
+  database: 0  # Set this to the database index of the redis server. 0 is the default, if you have a single database.
+  username: "...."  # Set this to the username of the redis database, you need to have ACL enabled database, it is required for this API to work.
+  password: "...." # Set this to the password of the redis database, make sure it is the password of user.
