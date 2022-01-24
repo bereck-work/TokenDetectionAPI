@@ -90,11 +90,14 @@ class TokenParser:
         """
         This method returns the hmac of the token.
 
-        Args:
+        Parameters
+        ----------
             hmac (typing.AnyStr): The hmac of the token.
 
-        Returns:
-            str: The hmac of the token.
+        Returns
+        -------
+            str:
+                The hmac of the token.
         """
         unique = len(set(hmac.lower()))
         if unique > 3:
@@ -106,17 +109,28 @@ class TokenParser:
             return None
 
     async def validate_token(
-        self,
-        raw_data=typing.AnyStr,
+        self, raw_data=typing.AnyStr, data_parsed_from_type: typing.AnyStr = None
     ) -> Token:
         """
         This method that returns various parts of the discord bot token, information about the token and validates it.
         It uses regex to match if there is a token like string in string, and then it splits the token into its parts,
         if a match is found.
 
+        Parameters
+        ----------
+            raw_data : typing.AnyStr
+                The raw data that needs to be parsed.
+
+            data_parsed_from_type : typing.AnyStr
+                The data that the raw data was parsed from.
+                If the raw data was extracted from an image, then it would be "image", if it was extracted from a raw text
+                file, then it would be "text".
+
+            # Laziness
+
         Returns
         -------
-        Token:
+        Token
             A discord bot token object.
         """
         for match in self.discord_bot_token_regex.finditer(raw_data):
@@ -125,7 +139,10 @@ class TokenParser:
             timestamp = self.get_timestamp(data[1])
             hmac = self.get_hmac(data[2])
             created_at = self.created_at(timestamp)
-            if user_id and timestamp and hmac:
+            if user_id and timestamp and hmac and data_parsed_from_type == "text":
+                #  This if statements checks that, if the data was parsed from raw text and not an image,
+                #  and if the token that was found is valid, it reports it as a valid token.
+                # This might look stupid at first, but I am lazy.
                 return Token(
                     user_id=user_id,
                     hmac=hmac,
@@ -136,6 +153,40 @@ class TokenParser:
                     reason="This token is valid, as all components of the token are valid.",
                     raw_data=raw_data,
                 )
+            if (
+                user_id is None
+                and timestamp
+                and hmac
+                and data_parsed_from_type == "image"
+            ):
+                # This if statement checks that if the token was parsed from an image, and if the token is valid,
+                # it reports it as a valid token.
+                return Token(
+                    user_id=user_id,
+                    hmac=hmac,
+                    created_at=created_at,
+                    timestamp=timestamp,
+                    token_string=".".join(data),
+                    is_valid=True,
+                    reason="This token is invalid, as one or more components of the token are invalid. "
+                    "However, it was parsed from an image, and the OCR will not be 100% accurate, so even if "
+                    "the components are invalid, if it looks like a token, it reports it as valid."
+                    "Please note that this is not a guarantee that the token is valid, and this is a stupid "
+                    "solution.",
+                    raw_data=raw_data,
+                )
+            if user_id and timestamp and hmac and data_parsed_from_type == "image":
+                return Token(
+                    user_id=user_id,
+                    hmac=hmac,
+                    created_at=created_at,
+                    timestamp=timestamp,
+                    token_string=".".join(data),
+                    is_valid=True,
+                    reason="This token is valid, as all components of the token are valid.",
+                    raw_data=raw_data,
+                )
+
             else:
                 return Token(
                     user_id=user_id,
@@ -162,8 +213,10 @@ class TokenParser:
         """
         This property returns the Discord epoch.
 
-        Returns:
-            int: Discord epoch.
+        Returns
+        -------
+        int
+            Discord epoch.
         """
         return self.discord_epoch
 
