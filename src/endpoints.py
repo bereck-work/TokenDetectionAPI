@@ -89,7 +89,7 @@ async def read_token_from_image(
     """
 
     data = await app.search_token_in_image(image.url)
-    return data.body
+    return data
 
 
 @app.post(
