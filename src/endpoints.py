@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from src.app import DetectionAPI
-from utils.helpers import ImageRequest, TextRequest, Token
+from utils.helpers import ImageRequest, TextRequest, Token, OCRequest, OCRData
 
 app = DetectionAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -69,7 +69,9 @@ async def game():
 
 
 @app.post(
-    "/token/image/{url}", dependencies=[Depends(RateLimiter(times=1, seconds=20))], response_model=Token
+    "/token/image/{url}",
+    dependencies=[Depends(RateLimiter(times=1, seconds=20))],
+    response_model=Token,
 )
 async def read_token_from_image(
     image: ImageRequest,
@@ -93,7 +95,9 @@ async def read_token_from_image(
 
 
 @app.post(
-    "/token/text/{text}", dependencies=[Depends(RateLimiter(times=3, seconds=20))], response_model=Token
+    "/token/text/{text}",
+    dependencies=[Depends(RateLimiter(times=3, seconds=20))],
+    response_model=Token,
 )
 async def read_token_from_text(
     data: TextRequest,
@@ -112,4 +116,28 @@ async def read_token_from_text(
         other information related to the token.
     """
     response = await app.search_token_in_text(data.content)
+    return response
+
+
+@app.post(
+    "/ocr/text/{text}",
+    dependencies=[Depends(RateLimiter(times=3, seconds=20))],
+    response_model=OCRData,
+)
+async def OCR_endpoint(
+    data: OCRequest,
+) -> JSONResponse:
+    """
+    This enpoint takes an url of an image and tries to extract the text from it. The extracted text will be not
+    100% accurate. It uses tesseract-ocr, so it might not be accurate all the time.
+
+    Parameters
+    ----------
+        The url of image from which the text needs to be extracted.
+
+    Returns
+    -------
+        A json response containing the text extracted from the image and url of the image.
+    """
+    response = await app.ocr(data.url)
     return response
