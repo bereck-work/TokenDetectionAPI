@@ -68,7 +68,9 @@ class DetectionAPI(FastAPI):
         Returns
         -------
         JSONResponse
-            A dictionary is returned containing data of the token if found or an error message if not.
+           A `fastapi.responses.JSONResponse` object
+            is returned containing the token and various other information about it
+            as a dict, which fastapi will render as a json object.
         """
 
         try:
@@ -109,7 +111,8 @@ class DetectionAPI(FastAPI):
         Returns
         -------
         JSONResponse
-            A dictionary is returned containing data of the token if found or an error message if not.
+            A `fastapi.responses.JSONResponse` object
+            is returned containing data of the token as a dict which fastapi will render as a json object.
         """
         json_data = (
             await self.parser.validate_token(text, data_parsed_from_type="text")
@@ -117,3 +120,50 @@ class DetectionAPI(FastAPI):
         return JSONResponse(
             content=json_data, status_code=200, media_type="application/json"
         )
+
+    async def ocr(self, url: str) -> JSONResponse:
+        """
+        An endpoint that searches for discord bot tokens in an image.
+
+        Parameters
+        ----------
+        url : str
+            The url of the image that needs to be processed.
+
+        Returns
+        -------
+        JSONResponse
+            A `fastapi.responses.JSONResponse` object
+            is returned containing the text that was read from the image as a dict
+             which fastapi will render as a json object.
+        """
+        try:
+            async with aiohttp.request("GET", url) as response:
+                if response.status != 200:
+                    self.logger.error(
+                        f"Image could not be downloaded. Status: {response.status}"
+                    )
+                    raise fastapi.exceptions.HTTPException(
+                        status_code=410, detail="Image resource not found."
+                    )
+                data_from_image = await self.read_image(
+                    data_in_bytes=BytesIO(await response.read())
+                )
+
+                json_data = {
+                    "url": url,
+                    "unfiltered_text": data_from_image,
+                    "filtered_text": data_from_image.replace("\n", " ")
+                    .replace("\f", "")
+                    .replace("\r", "")
+                    .replace("\t", "")
+                    .replace("\v", ""),
+                }
+                return JSONResponse(
+                    status_code=200, content=json_data, media_type="application/json"
+                )
+        except aiohttp.InvalidURL:
+            self.logger.error("Image url is not a valid url.")
+            raise fastapi.exceptions.HTTPException(
+                status_code=400, detail="Invalid Image URL provided."
+            )
