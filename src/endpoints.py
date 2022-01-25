@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from src.app import DetectionAPI
-from utils.helpers import ImageRequest, TextRequest, Token, OCRequest, OCRData
+from utils.helpers import ImageRequest, TextRequest, Token, OCRData
 
 app = DetectionAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -125,7 +125,7 @@ async def read_token_from_text(
     response_model=OCRData,
 )
 async def OCR_endpoint(
-    data: OCRequest,
+    data: ImageRequest,
 ) -> JSONResponse:
     """
     This enpoint takes an url of an image and tries to extract the text from it. The extracted text will be not
