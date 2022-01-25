@@ -275,18 +275,6 @@ class TextRequest(BaseModel):
     content: str
 
 
-class OCRequest(BaseModel):
-    """
-    A model that represents a POST request to the ocr endpoint.
-
-    Attributes
-    ----------
-        The text to be processed.
-    """
-
-    url: str
-
-
 class OCRData(BaseModel):
     """
     A model that represents the response from the ocr endpoint.
