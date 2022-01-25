@@ -10,7 +10,8 @@ from utils.helpers import Token
 
 class TokenParser:
     """
-    A class that parses a discord bot token.
+    A class that parses a discord bot token into its individual components and returns various information about it in
+    class `Token` object.
     """
 
     def __init__(self):
@@ -22,14 +23,15 @@ class TokenParser:
         )  # regex for discord bot token, taken from https://github.com/onerandomusername/secrets-pre-commit
         # thanks arl!
 
-    @staticmethod
-    def get_timestamp(timestamp: str) -> typing.Optional[int]:
+    def get_timestamp(self, timestamp: str) -> typing.Optional[int]:
         """
         This method returns the timestamp of the token.
 
         Parameters
         ----------
-            timestamp (typing.AnyStr): The timestamp of the token encoded in base64.
+        timestamp : typing.AnyStr
+
+            The timestamp of the token encoded in base64.
 
         Returns
         -------
@@ -38,6 +40,12 @@ class TokenParser:
         """
         try:
             data = int.from_bytes(base64.urlsafe_b64decode(timestamp + "=="), "big")
+            if data + self.token_epoch < self.discord_epoch:
+                logger.error(
+                    f"Invalid token timestamp: {data}, as the sum of timestamp and token epoch is smaller "
+                    f"than the Discord epoch."
+                )
+                return None
             return data
         except ValueError:
             logger.error(f"Could not decode timestamp: {timestamp}")
@@ -46,17 +54,18 @@ class TokenParser:
     @staticmethod
     def created_at(timestamp: int) -> typing.Optional[datetime]:
         """
-        This method returns the created at date of the token.
+        This method returns a datetime object of a timestamp. This method is just a utility method, that you can
+        combine with the`TokenParser.get_timestamp` method.
 
         Parameters
         -----------
-            timestamp
-                The timestamp of the token.
+        timestamp
+            The timestamp of the token.
 
         Returns
         -------
-            typing.Optional[datetime.datetime]
-                The created at date of the token.
+        typing.Optional[datetime.datetime]
+            The created at date of the token.
         """
         try:
             time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
@@ -66,22 +75,28 @@ class TokenParser:
             return None
 
     @staticmethod
-    def get_user_id(user_id: typing.AnyStr) -> typing.Optional[int]:
+    def get_user_id(data: typing.AnyStr) -> typing.Optional[int]:
         """
-        This method returns the user ID of the token.
+        This method returns the user id from the discord bot token by decoding the base64 string that represents the
+        user ID in the token. If the base64 string is valid, it will return an integer that represents the user ID,
+        if not it will return None.
 
-        Args:
-            user_id (typing.AnyStr): The user ID of the token.
+        Parameters
+        -----------
+        data : typing.AnyStr
+            T
 
-        Returns:
-            int: The user ID of the token.
+        Returns
+        -------
+        typing.Optional[int]
+            The user ID of the token as an integer.
         """
         try:
-            data = int(base64.urlsafe_b64decode(user_id))
+            data = int(base64.urlsafe_b64decode(data))
             return data
         except ValueError:
             logger.error(
-                f"Could not decode user ID: {user_id}, as it is not a valid base64 encoded string."
+                f"Could not decode user ID: {data}, as it is not a valid base64 encoded string."
             )
             return None
 
@@ -122,9 +137,9 @@ class TokenParser:
                 The raw data that needs to be parsed.
 
             data_parsed_from_type : typing.AnyStr
-                The data that the raw data was parsed from.
-                If the raw data was extracted from an image, then it would be "image", if it was extracted from a raw text
-                file, then it would be "text".
+                The raw data that was parsed.
+                If the raw data was extracted from an image, then it would be "image", if it was extracted directly from
+                text, then it would be "text".
 
             # Laziness
 
@@ -170,8 +185,8 @@ class TokenParser:
                     is_valid=True,
                     reason="This token is invalid, as one or more components of the token are invalid. "
                     "However, it was parsed from an image, and the OCR will not be 100% accurate, so even if "
-                    "the components are invalid, if it looks like a token, it reports it as valid."
-                    "Please note that this is not a guarantee that the token is valid, and this is a stupid "
+                    "the components are invalid, if a token like string matches, it is valid. "
+                    "Please note that this is not a guarantee that the token is actually valid, and this is a stupid "
                     "solution.",
                     raw_data=raw_data,
                 )
@@ -201,7 +216,7 @@ class TokenParser:
         else:
             return Token(
                 is_valid=False,
-                reason="This token is invalid, as it does not match the discord bot token format.",
+                reason="No token like string in the extracted text data.",
                 raw_data=raw_data,
             )
 
@@ -209,26 +224,21 @@ class TokenParser:
         return f"<TokenParser: {self.token_string}>"
 
     @property
-    def epoch_of_discord(self):
+    def epoch_of_discord(self) -> int:
         """
         This property returns the Discord epoch.
-
-        Returns
-        -------
-        int
-            Discord epoch.
         """
         return self.discord_epoch
 
     @property
-    def epoch_of_token(self):
+    def epoch_of_token(self) -> int:
         """
         This property returns the Token epoch.
         """
         return self.token_epoch
 
     @property
-    def token(self):
+    def token(self) -> str:
         """
         This property returns the token, that was read from the image.
         """
