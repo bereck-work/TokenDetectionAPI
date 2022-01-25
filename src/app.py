@@ -58,7 +58,8 @@ class DetectionAPI(FastAPI):
 
     async def search_token_in_image(self, image_url: str) -> JSONResponse:
         """
-        Searches for discord bot tokens in an image.
+        |coroutine|
+        This method searches for discord bot tokens in an image.
 
         Parameters
         ----------
@@ -123,7 +124,7 @@ class DetectionAPI(FastAPI):
 
     async def ocr(self, url: str) -> JSONResponse:
         """
-        An endpoint that searches for discord bot tokens in an image.
+        This method extracts text from image provided by url.
 
         Parameters
         ----------
@@ -135,7 +136,7 @@ class DetectionAPI(FastAPI):
         JSONResponse
             A `fastapi.responses.JSONResponse` object
             is returned containing the text that was read from the image as a dict
-             which fastapi will render as a json object.
+            which fastapi will render as a json object.
         """
         try:
             async with aiohttp.request("GET", url) as response:
@@ -167,3 +168,4 @@ class DetectionAPI(FastAPI):
             raise fastapi.exceptions.HTTPException(
                 status_code=400, detail="Invalid Image URL provided."
             )
+            
