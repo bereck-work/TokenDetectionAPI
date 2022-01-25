@@ -68,16 +68,12 @@ class Config:
         if mode is None:
             self.logger.error("Preview setting is not set in the config.yml file.")
             sys.exit(1)
-        if mode.lower() == "on":
-            return True
-        elif mode.lower() == "off":
-            return False
-        else:
+        if mode is not True and mode is not False:
             self.logger.error(
-                "Invalid choice for preview setting in the config.yml file. "
-                "Accepted values are 'on' or 'off'."
+                "Invalid choice for preview mode in the config.yml file. Accepted values are 'on' or 'off'."
             )
             sys.exit(1)
+        return mode
 
     @property
     def fastapi_debug_mode(self) -> typing.Optional[bool]:
@@ -93,15 +89,12 @@ class Config:
         if mode is None:
             self.logger.error("Fastapi debug mode is not set in the config.yml file.")
             sys.exit(1)
-        if mode.lower() == "on":
-            return True
-        elif mode.lower() == "off":
-            return False
-        else:
+        if mode is not True and mode is not False:
             self.logger.error(
-                "Invalid choice for debug mode in the config.yml file. Accepted values are 'on' or 'off'."
+                "Invalid choice for preview mode in the config.yml file. Accepted values are 'on' or 'off'."
             )
             sys.exit(1)
+        return mode
 
     @property
     def redis_address(self) -> typing.Optional[str]:
@@ -115,7 +108,7 @@ class Config:
         """
         data = self.data["Redis"]["address"]
         if data is None:
-            self.logger.error("No redis address found in config.yml")
+            self.logger.error("Redis address was not set in config.yml")
             sys.exit(1)
         return data
 
@@ -131,7 +124,7 @@ class Config:
         """
         data = self.data["Redis"]["port"]
         if data is None:
-            self.logger.error("No redis port found in config.yml")
+            self.logger.error("Redis port was not set in config.yml")
             sys.exit(1)
         return int(data)
 
@@ -147,7 +140,7 @@ class Config:
         """
         data = self.data["Redis"]["password"]
         if data is None:
-            self.logger.error("No redis password found in config.yml")
+            self.logger.error("Redis password is not provided in config.yml")
             sys.exit(1)
         return data
 
@@ -188,6 +181,7 @@ class Config:
 
 
 def executor_function(sync_function: typing.Callable):
+    # Taken from Jishaku ( https://github.com/Gorialis/jishaku/blob/master/jishaku/functools.py#L20 )
     """
     A decorator that wraps a sync function in an executor, changing it into an async function.
     This allows processing functions to be wrapped and used immediately as an async function.
@@ -223,7 +217,7 @@ class Token(BaseModel):
 
     token_string: typing.Union[str, None] = None
     raw_data: typing.Union[str, None] = None
-    user_id: typing.Union[str, int, None] = None
+    user_id: typing.Union[int, None] = None
     timestamp: typing.Union[int, None] = None
     created_at: typing.Union[datetime.datetime, None] = None
     hmac: typing.Union[str, None] = None
@@ -236,7 +230,7 @@ class Token(BaseModel):
 
         Returns
         -------
-        typing.Dict
+        dict
             The dictionary representation of the Token object.
         """
         data = {
@@ -250,7 +244,8 @@ class Token(BaseModel):
             "reason": self.reason,
         }
         json_data = json.dumps(data)
-        return json.loads(json_data)
+        data = json.loads(json_data)
+        return data
 
     def __repr__(self):
         return f"<TokenData {self.token_string}>"
@@ -278,3 +273,29 @@ class TextRequest(BaseModel):
     """
 
     content: str
+
+
+class OCRequest(BaseModel):
+    """
+    A model that represents a POST request to the ocr endpoint.
+
+    Attributes
+    ----------
+        The text to be processed.
+    """
+
+    url: str
+
+
+class OCRData(BaseModel):
+    """
+    A model that represents the response from the ocr endpoint.
+
+    Attributes
+    ----------
+        The text that was processed.
+    """
+
+    url: str
+    unfiltered_text: str
+    filtered_text: str
