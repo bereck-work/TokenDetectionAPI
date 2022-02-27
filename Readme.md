@@ -1,6 +1,6 @@
 # Welcome
 
-This repository hosts the source code of a simple API built using [FastAPI](https://fastapi.tiangolo.com) framework.
+This repository contains the source code of a simple API built using [FastAPI](https://fastapi.tiangolo.com) framework.
 
 ## Installation
 There are currently two ways to install:
@@ -20,18 +20,18 @@ poetry install
 As we have included a `pyproject.toml` file, poetry will automatically install the dependencies from the file.
 
 # How does this API work?
-This API is based on [Tesseract OCR library](https://), an open source OCR engine that can extract text / text data from images.
+This API is based on [Tesseract OCR library](https://), an open source OCR engine that can extract text from images.
 
 This API works in `three` main steps:
 <dl>
 
-<dt> <strong> 1. Image processing </strong> </dt>
-    <dd> The <strong>image</strong> is extracted from the url in bytes and then the image is cleaned using <a href="https://github.com/python-pillow/Pillow">pillow</a> (A very reliable and robust image processing library written in C with python bindings). The cleaning process is done by grayscaling, removing noise, and then applying some masks to make the image cleaner and better for Tesseract to parse the image with high accuracy. </dd>
+<dt> <strong> 1.) Image processing </strong> </dt>
+    <dd> The <strong>image</strong> is extracted from the url in bytes and then the image is cleaned using <a href="https://github.com/python-pillow/Pillow">pillow</a> (A very powerful, reliable and robust image processing library written in C with python bindings). The cleaning process is done by grayscaling, removing noise, and then applying some masks to make the image cleaner and better for Tesseract engine to parse the image with high accuracy. </dd>
 
-<dt> <strong> OCR </strong> </dt>
-    <dd> The cleaned image is then passed to <strong> Tesseract OCR library </strong>. The library processes the image, and returns the extracted the text from the image. </dd>
+<dt> <strong> 2.) OCR </strong> </dt>
+    <dd> The cleaned image is then passed to <strong> Tesseract OCR engine </strong>. The engine processes the image, and returns the extracted the text from the image. </dd>
 
-<dt> <strong> Token detection and validation </strong> </dt>
+<dt> <strong> 3.) Token detection and validation </strong> </dt>
     <dd> The text is parsed and the API uses a regex to find <strong> token like strings </strong> in the text, if a match is found, the token goes through a validation process.
          The validation process checks that the token was extracted is a valid token, if it is a valid token, the API returns the token and information about the token. </dd>
 
@@ -42,7 +42,7 @@ This API works in `three` main steps:
 
 The above image shows the details about different components of a discord bot token.
 
-A token is composed of 3 components:
+A token is mainly composed of 3 components:
 
 <ol>
 
