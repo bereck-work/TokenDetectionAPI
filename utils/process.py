@@ -98,7 +98,7 @@ class Process:
         This method starts the uvicorn server.
         """
         self.logger.info(
-            f"Started uvicorn server at {self.config.host}:{self.config.port}"
+            f"Started uvicorn server at http://{self.config.host}:{self.config.port}"
         )
         uvicorn.run("src.endpoints:app", host=self.config.host, port=self.config.port)
 
@@ -107,14 +107,13 @@ class Process:
         This method starts the uvicorn server.
         """
         self.logger.info("Starting server....")
-        result = self.check_preview_mode()
+        result_for_preview_mode = self.check_preview_mode()
         uvicorn_thread = Thread(target=self.start_uvicorn)
         ngrok_thread = Thread(target=self.start_ngrok)
-        if result:
+        if result_for_preview_mode is True:
             ngrok_thread.start()
             uvicorn_thread.start()
             uvicorn_thread.join()
             ngrok_thread.join()
         else:
             Thread(target=self.start_uvicorn()).start()
-            Thread(target=self.start_uvicorn()).join()
