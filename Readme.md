@@ -3,7 +3,7 @@
 This repository contains the source code of a simple API built using [FastAPI](https://fastapi.tiangolo.com) framework.
 
 ## Warning
-This API is not built to be a token logger, or anything such as that, this was built on the purpose for programs and applications, such as discord bots to warn users, if they have leaked their discord bot token.
+This API is not built to be a token logger, or anything such as that, this was built on the purpose for programs and applications, such as discord bots to warn users, if they have accidently leaked their discord bot token in the images they sent. This is a somewhat common case that happens in discord servers related to programming and programming help.
 
 ## Installation
 There are currently two ways to install:
