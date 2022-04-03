@@ -82,7 +82,7 @@ If you pass a valid token like string which is actually not valid but just a str
 
 
 # Tesseract
-Tesseract is an open source and powerful OCR library developed by **Google** that is used to process images and extract text from them.
+Tesseract is an open source and powerful OCR engine developed by **Google** that is used to process images and extract text from them.
 
 Installation of Tesseract is pretty easy on linux, you can install it by running the following command:
 
@@ -91,8 +91,8 @@ Installation of Tesseract is pretty easy on linux, you can install it by running
   sudo apt-get install libtesseract-dev
 ```
 
-The above command will install Tesseract OCR library and the CLI tool.
-Tesseract can be directly used by a terminal as Tesseract originally is a CLI based library. After installing tesseract we have to install tesseract language data.
+The above command will install Tesseract OCR engine and the command-line program to interface with it.
+Tesseract can be directly used by a terminal as Tesseract originally is a CLI based library. After installing the engine, we have to install tesseract language data a.k.a tessdata.
 
 ```bash
  sudo apt-get install tesseract-ocr-eng
@@ -143,7 +143,7 @@ Visit [ngrok](https://ngrok.io/) to install ngrok and for more information on ho
 
 
 ## Note
-This project is still in development, and the API is not stable / accurate yet. You can run the API in preview mode if you want to test it.
+This project is still in development, and the API is decently accurate, however, it still needs improvements. You can run the API in preview mode if you want to test it.
 
 This `Readme` will be updated as the project progresses.
 
