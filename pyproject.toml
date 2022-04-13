@@ -1,27 +1,28 @@
 [tool.poetry]
-name = "Token-Detector"
-version = "1.0.0"
-description = "An API that detect discord Bot tokens from images"
+name = "TokenDetectionAPI"
+version = "1.0.1"
+description = "An API developed to detect discord bot tokens in a given image. Built using FastAPI framework."
 authors = ["KortaPo"]
-license = "ISC"
+license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 fastapi = "^0.70.1"
-amogus = "^0.1"
 PyYAML = "^6.0"
-requests = "^2.27.1"
 loguru = "^0.5.3"
-aiohttp = {extras = ["speedups"], version = "^3.8.1"}
 numpy = "^1.22.1"
-opencv-python-headless = "4.5.4.60"
 fastapi-limiter = {git = "https://github.com/long2ice/fastapi-limiter.git"}
 pytesseract = "^0.3.8"
 uvicorn = {extras = ["standard"], version = "^0.17.0"}
+uvloop = "^0.16.0"
+aiohttp = {extras = ["speed"], version = "^3.8.1"}
 
 
 [tool.poetry.dev-dependencies]
 isort = "^5.10.1"
+pyright = "^1.1.234"
+pdoc3 = "^0.10.0"
+black = "22.3.0"
 
 [tool.isort]
 profile = "black"
