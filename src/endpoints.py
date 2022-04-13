@@ -81,7 +81,7 @@ async def read_token_from_image(
 
     Parameters
     ----------
-        The url of the image to be read, needs to be a base64 encoded string.
+        The url of the image to be read, needs to be a valid url.
 
     Returns
     -------
