@@ -5,7 +5,9 @@ from datetime import datetime, timezone
 
 from loguru import logger
 
-from utils.helpers import Token
+from utils.models import Token
+
+__all__ = ("TokenParser",)
 
 
 class TokenParser:
@@ -29,8 +31,7 @@ class TokenParser:
 
         Parameters
         ----------
-        timestamp : typing.AnyStr
-
+        timestamp : str
             The timestamp of the token encoded in base64.
 
         Returns
@@ -39,7 +40,9 @@ class TokenParser:
                The timestamp of the token as an integer.
         """
         try:
-            data = int.from_bytes(base64.urlsafe_b64decode(timestamp + "=="), "big")
+            data = int.from_bytes(
+                base64.urlsafe_b64decode(timestamp + "=="), byteorder="big"
+            )
             if data + self.token_epoch < self.discord_epoch:
                 logger.error(
                     f"Invalid token timestamp: {data}, as the sum of timestamp and token epoch is smaller "
@@ -68,14 +71,16 @@ class TokenParser:
             The created at date of the token.
         """
         try:
-            time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
-            return time
+            datetime_extracted_from_timestamp = datetime.fromtimestamp(
+                timestamp, tz=timezone.utc
+            )
+            return datetime_extracted_from_timestamp
         except Exception as e:
             logger.error(f"Error while decoding timestamp: {e}")
             return None
 
     @staticmethod
-    def get_user_id(data: typing.AnyStr) -> typing.Optional[int]:
+    def get_user_id(data: str) -> typing.Optional[int]:
         """
         This method returns the user id from the discord bot token by decoding the base64 string that represents the
         user ID in the token. If the base64 string is valid, it will return an integer that represents the user ID,
@@ -83,8 +88,8 @@ class TokenParser:
 
         Parameters
         -----------
-        data : typing.AnyStr
-            T
+        data : str
+            The base64 string that represents the user ID in the token.
 
         Returns
         -------
@@ -92,8 +97,8 @@ class TokenParser:
             The user ID of the token as an integer.
         """
         try:
-            data = int(base64.urlsafe_b64decode(data))
-            return data
+            decoded_base64_data = int(base64.urlsafe_b64decode(data))
+            return decoded_base64_data
         except ValueError:
             logger.error(
                 f"Could not decode user ID: {data}, as it is not a valid base64 encoded string."
@@ -124,7 +129,7 @@ class TokenParser:
             return None
 
     async def validate_token(
-        self, raw_data=typing.AnyStr, data_parsed_from_type: typing.AnyStr = None
+        self, raw_data: str, data_parsed_from_type: str = None
     ) -> Token:
         """
         This method that returns various parts of the discord bot token, information about the token and validates it.
@@ -133,12 +138,12 @@ class TokenParser:
 
         Parameters
         ----------
-            raw_data : typing.AnyStr
-                The raw data that needs to be parsed.
+            raw_data : str
+                The raw text data that needs to be parsed.
 
             data_parsed_from_type : typing.AnyStr
-                The raw data that was parsed.
-                If the raw data was extracted from an image, then it would be "image", if it was extracted directly from
+                The type  of raw text data that was parsed.
+                If the text was extracted from an image, then it would be "image", if it was extracted directly from
                 text, then it would be "text".
 
             # Laziness
