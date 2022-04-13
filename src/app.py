@@ -5,31 +5,34 @@ import aiohttp
 import fastapi
 import pytesseract
 from fastapi import FastAPI
-from loguru import logger
 from fastapi.responses import JSONResponse
+from loguru import logger
 
 from core.image import CleanImage
 from core.parser import TokenParser
 from utils.exceptions import InvalidImage
-from utils.helpers import executor_function, Config
+from utils.helpers import Config, executor_function
+
+__all__ = ("DetectionAPI",)
 
 
 class DetectionAPI(FastAPI):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.title = "Detection API"
-        self.version = "1.0.0"
-        self.description = (
-            "An API that detects discord bot tokens in images using tesseract-ocr"
-        )
+    def __init__(self):
         self.cleaner = CleanImage()
         self.parser = TokenParser()
         self.config = Config()
         self.logger = logger
-        self.debug = self.config.fastapi_debug_mode
+
+        super().__init__(
+            title="Token Detection API",
+            version="1.0.1",
+            description="An API developed to detect discord bot tokens using Tesseract OCR engine in a given image. "
+            "Built using FastAPI framework.",
+            debug=self.config.fastapi_debug_mode,
+        )
 
     @executor_function
-    def read_image(self, data_in_bytes: BytesIO) -> str:
+    def read_image(self, data_in_bytes: BytesIO) -> typing.Coroutine[str, None, None]:
         """
         An executor function that reads an image and returns the text found in the image.
 
@@ -59,12 +62,14 @@ class DetectionAPI(FastAPI):
     async def search_token_in_image(self, image_url: str) -> JSONResponse:
         """
         |coroutine|
-        This method searches for discord bot tokens in an image.
+        This method validates and downloads the image from the provided url, if the url is valid and an image is found,
+        it calls :class:`core.parser.TokenParser.validate_token` to parse the image for tokens,
+        if found, it returns the token and various other information about it as a special Json response object,
 
         Parameters
         ----------
         image_url : str
-            The url of the image to search for tokens in, must be a valid url.
+            The url of the image to search for tokens in, must be a valid url containing an image.
 
         Returns
         -------
@@ -100,9 +105,12 @@ class DetectionAPI(FastAPI):
                 status_code=400, detail="Invalid Image URL provided."
             )
 
-    async def search_token_in_text(self, text: typing.AnyStr) -> JSONResponse:
+    async def search_token_in_text(self, text: str) -> JSONResponse:
         """
-        Searches for discord bot tokens in a text.
+        |coroutine|
+        This method calls :class:`core.parser.TokenParser.validate_token` to parse the text for tokens,
+        if found, it returns the token and various other information about it as a special Json response object,
+        which fastapi will render as a json object.
 
         Parameters
         ----------
@@ -124,7 +132,12 @@ class DetectionAPI(FastAPI):
 
     async def ocr(self, url: str) -> JSONResponse:
         """
-        This method extracts text from image provided by url.
+        |coroutine|
+        This method downloads an image from url, and then uses :func:`read_image` to read the image and
+        returns a json response containing the text from the image that was extracted from the function
+        :func:`read_image`.
+        The json response is a special fastapi response that is rendered as a json object, this function is made to be a
+        called directly in fastapi routes.
 
         Parameters
         ----------
@@ -137,6 +150,11 @@ class DetectionAPI(FastAPI):
             A `fastapi.responses.JSONResponse` object
             is returned containing the text that was read from the image as a dict
             which fastapi will render as a json object.
+
+        Raises
+        ------
+        fastapi.exceptions.HTTPException
+            If the image could not be downloaded, or the url is not a valid url.
         """
         try:
             async with aiohttp.request("GET", url) as response:
@@ -168,4 +186,3 @@ class DetectionAPI(FastAPI):
             raise fastapi.exceptions.HTTPException(
                 status_code=400, detail="Invalid Image URL provided."
             )
-            
