@@ -1,4 +1,4 @@
-class InvalidImage(Exception):
+class InvalidImage(BaseException):
     """
     Exception raised when an image is invalid.
     """
@@ -6,7 +6,7 @@ class InvalidImage(Exception):
     pass
 
 
-class InvalidUrl(Exception):
+class InvalidUrl(BaseException):
     """
     Exception raised when an url is invalid.
     """
