@@ -5,12 +5,14 @@ from threading import Thread
 import uvicorn
 from loguru import logger
 
-from utils.helpers import Config
+from utils import Config
+
+__all__ = ("Process",)
 
 
 class Process:
     """
-    A class that handles the process of running the server.
+    This is an internal class that initializes and handles an uvicorn web server instance running a FastAPI app.
     """
 
     def __init__(self):
@@ -21,7 +23,7 @@ class Process:
 
     def check_if_ngrok_exists(self) -> bool:
         """
-        This method checks if ngrok is installed on the system.
+        This method checks if ngrok command line is installed on the operating system.
 
         Returns:
             bool: True if ngrok is installed, False otherwise.
@@ -42,7 +44,7 @@ class Process:
 
     def check_preview_mode(self) -> bool:
         """
-        This method checks if the preview mode is enabled.
+        This method checks if the preview mode is enabled in the configuration file.
 
         Returns
         -------
@@ -59,14 +61,14 @@ class Process:
             return True
         else:
             self.logger.info(
-                "Preview mode is disabled. Ngrok tunnel will not be started and the API will be "
-                "available only on localhost."
+                f"Preview mode is disabled. Ngrok tunnel will not be started and the API will be "
+                f"available only on https://{self.config.host}:{self.config.port}"
             )
             return False
 
-    def start_ngrok(self):
+    def start_ngrok(self) -> None:
         """
-        This method starts ngrok.
+        This method will start a ngrok tunnel instance using subprocess.
         """
         result = self.check_if_ngrok_exists()
         if result:
@@ -93,7 +95,7 @@ class Process:
         else:
             return
 
-    def start_uvicorn(self):
+    def start_uvicorn(self) -> None:
         """
         This method starts the uvicorn server.
         """
@@ -101,19 +103,28 @@ class Process:
             f"Started uvicorn server at http://{self.config.host}:{self.config.port}"
         )
         uvicorn.run("src.endpoints:app", host=self.config.host, port=self.config.port)
+        return
 
-    def start_server(self):
+    def start_uvicorn_server(self) -> None:
         """
-        This method starts the uvicorn server.
+        This method initializes an uvicorn web server instance, and if preview mode is enabled, it will also
+        run a ngrok tunnel instance on a seperate thread.
         """
-        self.logger.info("Starting server....")
+        self.logger.info("Starting uvicorn server....")
         result_for_preview_mode = self.check_preview_mode()
         uvicorn_thread = Thread(target=self.start_uvicorn)
         ngrok_thread = Thread(target=self.start_ngrok)
-        if result_for_preview_mode is True:
-            ngrok_thread.start()
-            uvicorn_thread.start()
-            uvicorn_thread.join()
-            ngrok_thread.join()
-        else:
-            Thread(target=self.start_uvicorn()).start()
+        try:
+            if result_for_preview_mode:
+                ngrok_thread.start()
+                uvicorn_thread.start()
+                uvicorn_thread.join()
+                ngrok_thread.join()
+            else:
+                uvicorn_thread.start()
+
+        except Exception as e:
+            self.logger.error(
+                f"An error occurred while starting the server. Error: {e}"
+            )
+            sys.exit(1)
