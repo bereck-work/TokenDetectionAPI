@@ -1,13 +1,15 @@
 import typing
 from io import BytesIO
 
-import PIL.ImageEnhance
 import numpy as np
+import PIL.ImageEnhance
+from loguru import logger
 from PIL import ImageFilter, ImageOps
 from PIL.Image import Image
-from loguru import logger
 
 from utils.exceptions import InvalidImage
+
+__all__ = ("CleanImage",)
 
 
 class CleanImage:
@@ -21,7 +23,7 @@ class CleanImage:
     @staticmethod
     def clean(image_as_bytes: BytesIO) -> BytesIO:
         """
-        A method that takes an image and returns a cleaned version of it by removing noise and smoothing it.
+        This method takes an image and returns a cleaned version of it by removing noise and smoothing it.
 
         Parameters
         ----------
@@ -32,6 +34,11 @@ class CleanImage:
         -------
         typing.Optional[BytesIO]
             The cleaned image as a BytesIO object, or None if the image could not be cleaned or if the image is None.
+
+        Raises
+        ------
+        InvalidImage
+            If the image is not in the BytesIO or the image has failed to be converted to a PIL image object.
         """
         image_binary = BytesIO()
 
@@ -63,7 +70,7 @@ class CleanImage:
     @staticmethod
     def to_numpy_array(image_as_bytes: BytesIO) -> np.ndarray:
         """
-        Returns an image as a numpy array.
+        This method returns an image in BytesIO as a numpy array.
 
         Parameters
         ----------
@@ -74,9 +81,18 @@ class CleanImage:
         -------
         numpy.ndarray
             The image as a numpy array.
+
+        Raises
+        ------
+        InvalidImage
+            If the image is not in the BytesIO or the image has failed to be converted to a PIL image object.
         """
         image_binary = BytesIO()
-        pil_image = PIL.Image.open(image_as_bytes)
+        try:
+            pil_image = PIL.Image.open(image_as_bytes)
+        except Exception as e:
+            logger.error(e)
+            raise InvalidImage("The image could not be converted to a PIL image.")
         pil_image.save(image_binary, format="PNG")
         image_binary.seek(0)
         return np.frombuffer(image_binary.read(), dtype=np.uint8)
@@ -84,7 +100,7 @@ class CleanImage:
     @staticmethod
     def to_pil_image(image_as_bytes: BytesIO) -> Image:
         """
-        Returns an image as a PIL image.
+        This method returns an image in BytesIO as a :class:`PIL.Image.Image` object.
 
         Parameters
         ----------
@@ -95,6 +111,11 @@ class CleanImage:
         -------
         PIL.Image
             The image as a PIL image object.
+
+        Raises
+        ------
+        InvalidImage
+            If the image is not in the BytesIO or the image has failed to be converted to a PIL image object.
         """
         try:
             image = PIL.Image.open(image_as_bytes)
@@ -104,4 +125,4 @@ class CleanImage:
             raise InvalidImage("The image could not be converted to a PIL image.")
 
     def __repr__(self):
-        return f"CleanImage({self})"
+        return f"CleanImage <{self.__dict__}>)"
