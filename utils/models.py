@@ -17,23 +17,21 @@ class Token(BaseModel):
     A class that represents a discord bot token, in its indiviual parts.
     """
 
-    token_string: typing.Union[str, None] = None
-    raw_data: typing.Union[str, None] = None
-    user_id: typing.Union[int, None] = None
-    timestamp: typing.Union[int, None] = None
-    created_at: typing.Union[datetime.datetime, None] = None
-    hmac: typing.Union[str, None] = None
+    token_string: typing.Optional[str] = None
+    raw_data: typing.Optional[str] = None
+    user_id: typing.Optional[int] = None
+    timestamp: typing.Optional[int] = None
+    created_at: typing.Optional[datetime.datetime] = None
+    hmac: typing.Optional[str] = None
     is_valid: bool
-    reason: typing.Union[str, None] = None
+    reason: typing.Optional[str] = None
 
     def jsonify(self) -> dict:
         """
         This method converts the Token object into a regular python dictionary object.
 
-        Returns
-        -------
-        dict
-            The dictionary representation of the Token object.
+        Returns:
+            (dict): The dictionary representation of the Token object.
         """
         data = {
             "token_string": self.token_string,
@@ -59,8 +57,7 @@ class ImageRequest(BaseModel):
     **api/token/image**
     **api/ocr/text**
 
-    Attributes
-    ----------
+    Attributes:
         The URL of the image to be processed.
     """
 
@@ -73,8 +70,7 @@ class TextRequest(BaseModel):
     **api/token/text**
     **api/ocr/text**
 
-    Attributes
-    ----------
+    Attributes:
         The text to be processed.
     """
 
@@ -83,10 +79,12 @@ class TextRequest(BaseModel):
 
 class OCRData(BaseModel):
     """
-    A model that represents the response from the OCR endpoint, both, the text and the image.
+    A model that represents the response from the OCR endpoint, both, from the text endpoint and from the image endpoint.
 
-    Attributes
-    ----------
+    **api/token/text**
+    **api/ocr/text**
+
+    Attributes:
         The text that was processed.
     """
 
