@@ -2,25 +2,24 @@ from loguru import logger
 import asyncio
 import uvloop
 import sys
-from utils.process import Process
+from utils.server import Server
 
 if __name__ == "__main__":
     if sys.platform.lower() == "linux":
-        logger.info("Linux based operating system detected!")
-        logger.info("Using uvloop for asyncio!")
+        logger.info("This app is running on a Linux based operating system. Using uvloop for asyncIO event loop.")
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     if sys.platform.lower() == "win32":
-        logger.info("Windows based operating system detected!")
-        logger.info("Using special Windows Event Loop!")
+        logger.info("This app is running on a Windows based operating system.")
+        logger.info("Using a Windows specific event loop.")
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-    process = Process()
+    server = Server()
     try:
-        process.start_uvicorn_server()
+        server.start_uvicorn_server()
     except KeyboardInterrupt:
-        logger.info("Shutting down server...")
+        logger.info("[*] User interrupted the program. Shutting down.")
         exit(0)
 
     except SystemExit:
-        logger.info("Shutting down server...")
+        logger.info("Shutting down server due to interpreter exit.")
