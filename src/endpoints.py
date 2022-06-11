@@ -15,7 +15,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.on_event("startup")
 async def startup() -> None:
     """
-    |coro|
+    |coroutine|
     This method is triggered when the FastAPI app instance starts up, it is binded to the event named as
     `startup` in the above listener (decorator).
     This function initializes the redis connection.
@@ -36,7 +36,8 @@ async def startup() -> None:
 @app.on_event("shutdown")
 async def shutdown() -> None:
     """
-    |coro|
+    |coroutine|
+
     This method is binded to the shutdown event of the server triggered when the FastAPI app instance shuts down,
     it closes the redis connection.
     """
@@ -77,16 +78,7 @@ async def read_token_from_image(
     """
     This endpoint reads an image from an url and tries extract the token from it, this uses tesseract-ocr, so it might
     not be accurate all the time.
-    This endpoint has a rate limiter, so it can only be called once every 20 seconds.
-
-    Parameters
-    ----------
-        The url of the image to be read, needs to be a valid url.
-
-    Returns
-    -------
-        A json response containing the token extracted from the url of the image, if found, and various
-        other information related to the token.
+    This endpoint has a rate limiter, so you can only make 1 request every 30 seconds.
     """
 
     data = await app.search_token_in_image(image.url)
@@ -95,7 +87,7 @@ async def read_token_from_image(
 
 @app.post(
     "/token/text/{text}",
-    dependencies=[Depends(RateLimiter(times=1, seconds=5))],
+    dependencies=[Depends(RateLimiter(times=1, seconds=10))],
     response_model=Token,
 )
 async def read_token_from_text(
@@ -104,16 +96,7 @@ async def read_token_from_text(
     """
     This endpoint reads a text and tries extract a token from it, if found, it will return the token and various
     other information related to the token.
-    This endpoint has a rate limiter, so it can only be called once every 5 seconds.
-
-    Parameters
-    ----------
-        The text that needs to be read.
-
-    Returns
-    -------
-        A json response containing the token extracted from text, if found, and various
-        other information related to the token.
+    This endpoint has a rate limiter, so you can only make 1 request every 10 seconds.
     """
     response = await app.search_token_in_text(data.content)
     return response
@@ -121,21 +104,14 @@ async def read_token_from_text(
 
 @app.post(
     "/ocr/text/{text}",
-    dependencies=[Depends(RateLimiter(times=1, seconds=30))],
+    dependencies=[Depends(RateLimiter(times=1, seconds=10))],
     response_model=OCRData,
 )
 async def OCR_endpoint(data: ImageRequest) -> JSONResponse:
     """
-    This enpoint takes an url of an image, validates and downloads the image and returns the text extracted from it as
-    OCRData response model. This endpoint uses Tesseract OCR engine to process the image.
-
-    Parameters
-    ----------
-        The url of image from which the text needs to be extracted.
-
-    Returns
-    -------
-        A json response containing the text extracted from the image and url of the image.
+    This enpoint takes an url of an image, validates and downloads the image and returns the text extracted from it in
+    :class:`OCRData` response. This endpoint uses Tesseract OCR engine to process the image.
+    This endpoint has a rate limiter, so you can only make 1 request every 10 seconds.
     """
     response = await app.ocr(data.url)
     return response
