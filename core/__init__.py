@@ -1,2 +1,2 @@
-from .image import *
 from .parser import *
+from .reader import *
