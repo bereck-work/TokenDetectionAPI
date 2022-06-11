@@ -2,6 +2,7 @@ import base64
 import re
 import typing
 from datetime import datetime, timezone
+from typing import Callable, Optional
 
 from loguru import logger
 
@@ -13,11 +14,11 @@ __all__ = ("TokenParser",)
 class TokenParser:
     """
     A class that parses a discord bot token into its individual components and returns various information about it in
-    class `Token` object.
+    class :class:`Token` object.
     """
 
     def __init__(self):
-        self.token_string = typing.AnyStr
+        self.token_string = str()
         self.token_epoch = 1_293_840_000
         self.discord_epoch = 1_420_070_400
         self.discord_bot_token_regex = re.compile(
@@ -27,17 +28,14 @@ class TokenParser:
 
     def get_timestamp(self, timestamp: str) -> typing.Optional[int]:
         """
-        This method returns the timestamp of the token.
+        This method takes a timestamp as a string and then returns the date and time of when the token was created,
+        based on the timestamp, if the timestamp is valid.
 
-        Parameters
-        ----------
-        timestamp : str
-            The timestamp of the token encoded in base64.
+        Parameters:
+            timestamp (str): This parameter takes the timestamp of the token as a string.
 
-        Returns
-        -------
-            typing.Optional[int]:
-               The timestamp of the token as an integer.
+        Returns:
+            (typing.Optional[int]): The date and time of when the token was created.
         """
         try:
             data = int.from_bytes(
@@ -57,18 +55,14 @@ class TokenParser:
     @staticmethod
     def created_at(timestamp: int) -> typing.Optional[datetime]:
         """
-        This method returns a datetime object of a timestamp. This method is just a utility method, that you can
-        combine with the`TokenParser.get_timestamp` method.
+        This method returns a datetime object of a timestamp. This method is just a utility method, that is called
+        by :meth:`get_timestamp` and :meth:`validate_token`.
 
-        Parameters
-        -----------
-        timestamp
-            The timestamp of the token.
+        Parameters:
+            timestamp (int): This parameter takes a timestamp as an integer.
 
-        Returns
-        -------
-        typing.Optional[datetime.datetime]
-            The created at date of the token.
+        Returns:
+            (typing.Optional[datetime.datetime]): The created at date of the token.
         """
         try:
             datetime_extracted_from_timestamp = datetime.fromtimestamp(
@@ -86,15 +80,11 @@ class TokenParser:
         user ID in the token. If the base64 string is valid, it will return an integer that represents the user ID,
         if not it will return None.
 
-        Parameters
-        -----------
-        data : str
-            The base64 string that represents the user ID in the token.
+        Parameters:
+            data (str): This parameter takes the base64 string that represents the user ID in the token.
 
-        Returns
-        -------
-        typing.Optional[int]
-            The user ID of the token as an integer.
+        Returns:
+            (typing.Optional[int]): The user ID of the token as an integer.
         """
         try:
             decoded_base64_data = int(base64.urlsafe_b64decode(data))
@@ -106,18 +96,16 @@ class TokenParser:
             return None
 
     @staticmethod
-    def get_hmac(hmac: str) -> typing.Optional[str]:
+    def validate_hmac_uniqueness(hmac: str) -> typing.Optional[str]:
         """
-        This method returns the hmac of the token.
+        This method takes a hmac string and checks if it is unique. If it is unique, it will return the hmac string,
+        if not it will return None.
 
-        Parameters
-        ----------
-            hmac (typing.AnyStr): The hmac of the token.
+        Parameters:
+            hmac (str): This parameter takes hmac of a token as a string.
 
-        Returns
-        -------
-            str:
-                The hmac of the token.
+        Returns:
+            (typing.Optional[str]): The hmac of the token as a string if it is unique.
         """
         unique = len(set(hmac.lower()))
         if unique > 3:
@@ -136,28 +124,22 @@ class TokenParser:
         It uses regex to match if there is a token like string in string, and then it splits the token into its parts,
         if a match is found.
 
-        Parameters
-        ----------
-            raw_data : str
-                The raw text data that needs to be parsed.
+        Parameters:
+            raw_data (str): This parameter takes the raw text data as a string that needs to be parsed.
 
-            data_parsed_from_type : typing.AnyStr
-                The type  of raw text data that was parsed.
-                If the text was extracted from an image, then it would be "image", if it was extracted directly from
-                text, then it would be "text".
-
+            data_parsed_from_type (str): This parameter takes the type of data that is parsed from the raw data.
+                                         If the text was extracted from an image, then it would be "image",
+                                         if it was extracted directly from text, then it would be "text".
             # Laziness
 
-        Returns
-        -------
-        Token
-            A discord bot token object.
+        Returns:
+            (Token): The token object containing all the data extracted from the token.
         """
         for match in self.discord_bot_token_regex.finditer(raw_data):
             data = match.group(1), match.group(2), match.group(3)
             user_id = self.get_user_id(data[0])
             timestamp = self.get_timestamp(data[1])
-            hmac = self.get_hmac(data[2])
+            hmac = self.validate_hmac_uniqueness(data[2])
             created_at = self.created_at(timestamp)
             if user_id and timestamp and hmac and data_parsed_from_type == "text":
                 #  This if statements checks that, if the data was parsed from raw text and not an image,
@@ -226,7 +208,7 @@ class TokenParser:
             )
 
     def __repr__(self):
-        return f"<TokenParser: {self.token_string}>"
+        return f"<{self.__class__.__name__} {self.token_string}>"
 
     @property
     def epoch_of_discord(self) -> int:
@@ -248,3 +230,10 @@ class TokenParser:
         This property returns the token, that was read from the image.
         """
         return self.token_string
+
+    @property
+    def token_created_at(self) -> Callable[[int], Optional[datetime]]:
+        """
+        This property returns the time the token was created.
+        """
+        return self.created_at
