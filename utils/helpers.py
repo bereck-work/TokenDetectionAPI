@@ -192,7 +192,7 @@ def executor_function(
 
         loop = asyncio.get_event_loop()
         internal_function = functools.partial(sync_function, *args, **kwargs)
-        if not asyncio.iscoroutinefunction(internal_function):
+        if asyncio.iscoroutinefunction(internal_function):
             raise TypeError(
                 f"This decorator only wraps and converts a synchronous function into an async function, "
                 f"{sync_function} is already an async function."
