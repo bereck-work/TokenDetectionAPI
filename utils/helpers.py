@@ -26,12 +26,10 @@ class Config:
     @property
     def port(self) -> typing.Optional[int]:
         """
-        This property returns the port of the app.
+        This property returns the port of the app that is defined in the configuration file.
 
-        Returns
-        -------
-        typing.Optional[int]
-            The port defined for the app.
+        Returns:
+            (typing.Optional[int]): The port defined for the app.
         """
         port = self.data["Settings"]["port"]
         if port is None:
@@ -45,10 +43,8 @@ class Config:
         """
         This property returns the host defined for the app.
 
-        Returns
-        -------
-        str
-            The host address.
+        Returns:
+            (typing.Optional[str]): The host defined for the app.
         """
         data = self.data["Settings"]["host"]
         if data is None:
@@ -61,10 +57,8 @@ class Config:
         """
         This property returns the state of preview mode setting in the config.yml file.
 
-        Returns
-        -------
-        bool
-            The preview mode.
+        Returns:
+            (typing.Optional[bool]): True if preview mode is enabled, False otherwise.
         """
         mode = self.data["Settings"]["preview"]
         if mode is None:
@@ -80,12 +74,10 @@ class Config:
     @property
     def fastapi_debug_mode(self) -> typing.Optional[bool]:
         """
-        This property returns the state of fastapi debug setting.
+        This property returns the state of fastapi debug mode setting in the config.yml file.
 
-        Returns
-        -------
-        bool
-            The fastapi debug mode.
+        Returns:
+            (bool): The fastapi debug mode.
         """
         mode = self.data["Settings"]["debug"]
         if mode is None:
@@ -101,12 +93,10 @@ class Config:
     @property
     def redis_address(self) -> typing.Optional[str]:
         """
-        This property returns the redis address.
+        This property returns the redis address defined in the config.yml file.
 
-        Returns
-        -------
-        str
-            The redis url.
+        Returns:
+            (typing.Optional[str]): The redis address.
         """
         data = self.data["Redis"]["address"]
         if data is None:
@@ -117,12 +107,10 @@ class Config:
     @property
     def redis_port(self) -> typing.Optional[int]:
         """
-        This property returns the redis port.
+        This property returns the redis port defined in the config.yml file.
 
-        Returns
-        -------
-        int
-            The redis port.
+        Returns:
+            (typing.Optional[int]): The redis port.
         """
         data = self.data["Redis"]["port"]
         if data is None:
@@ -133,12 +121,10 @@ class Config:
     @property
     def redis_password(self) -> typing.Optional[str]:
         """
-        This property returns the redis password.
+        This property returns the redis user password defined in the config.yml file.
 
-        Returns
-        -------
-        str
-            The redis password.
+        Returns:
+            (typing.Optional[str]): The redis user password.
         """
         data = self.data["Redis"]["password"]
         if data is None:
@@ -149,12 +135,10 @@ class Config:
     @property
     def redis_db(self) -> typing.Optional[int]:
         """
-        This property returns the redis database.
+        This property returns the redis database index defined in the config.yml file.
 
-        Returns
-        -------
-        int
-            The redis database.
+        Returns:
+            (typing.Optional[int]): The redis database index.
         """
         data = self.data["Redis"]["database"]
         if data is None:
@@ -165,12 +149,10 @@ class Config:
     @property
     def redis_username(self) -> typing.Optional[str]:
         """
-        This property returns the redis username.
+        This property returns the redis username that is defined in the config.yml file.
 
-        Returns
-        -------
-        str
-            The redis username.
+        Returns:
+            (typing.Optional[str]): The redis username.
         """
         data = self.data["Redis"]["username"]
         if data == "":
@@ -182,21 +164,24 @@ class Config:
         return f"<Config {self.data}>"
 
 
-def executor_function(sync_function: typing.Callable):
+def executor_function(
+    sync_function: typing.Callable[..., typing.Callable]
+):
     # Taken from Jishaku ( https://github.com/Gorialis/jishaku/blob/master/jishaku/functools.py#L20 )
     """
     A decorator that wraps a sync function in an executor, changing it into an async function.
     This allows processing functions to be wrapped and used immediately as an async function.
 
-    Parameters
-    ----------
-    sync_function : typing.Callable
-        The function to be wrapped.
+    Parameters:
+        sync_function (typing.Callable): This parameter takes the function to be wrapped and converts it into an
+                                         async function.
 
-    Returns
-    -------
-    typing.Callable
-        The wrapped function as a coroutine.
+
+    Returns:
+        (typing.Callable): The wrapped function as a coroutine.
+
+    Raises:
+        (TypeError): If the function object that is passed is already an async function.
     """
 
     @functools.wraps(sync_function)
@@ -207,6 +192,11 @@ def executor_function(sync_function: typing.Callable):
 
         loop = asyncio.get_event_loop()
         internal_function = functools.partial(sync_function, *args, **kwargs)
+        if not asyncio.iscoroutinefunction(internal_function):
+            raise TypeError(
+                f"This decorator only wraps and converts a synchronous function into an async function, "
+                f"{sync_function} is already an async function."
+            )
         return await loop.run_in_executor(None, internal_function)
 
     return sync_wrapper
