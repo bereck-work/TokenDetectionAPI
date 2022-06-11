@@ -1,4 +1,3 @@
-import typing
 from io import BytesIO
 
 import aiohttp
@@ -8,8 +7,8 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-from core.image import CleanImage
 from core.parser import TokenParser
+from core.reader import CleanImage
 from utils.exceptions import InvalidImage
 from utils.helpers import Config, executor_function
 
@@ -17,6 +16,9 @@ __all__ = ("DetectionAPI",)
 
 
 class DetectionAPI(FastAPI):
+    """
+    This class subclasses the :class:`fastapi.FastAPI` class with its own methods and attributes.
+    """
     def __init__(self):
         self.cleaner = CleanImage()
         self.parser = TokenParser()
@@ -32,22 +34,18 @@ class DetectionAPI(FastAPI):
         )
 
     @executor_function
-    def read_image(self, data_in_bytes: BytesIO) -> typing.Coroutine[str, None, None]:
+    def read_image(self, data: BytesIO) -> str:
         """
         An executor function that reads an image and returns the text found in the image.
 
-        Parameters
-        ----------
-        data_in_bytes : BytesIO
-            The image data in bytes.
+        Parameters:
+            data (BytesIO): The parameter takes an image as a BytesIO object, that needs to be read.
 
-        Returns
-        -------
-        str
-            The text found in the image.
+        Returns:
+            (str): The text found in the image.
         """
         try:
-            image = self.cleaner.clean(image_as_bytes=data_in_bytes)
+            image = self.cleaner.clean(image=data)
             cleaned_image = self.cleaner.to_pil_image(image)
         except InvalidImage:
             logger.error("Image could not be opened as it is not a valid url.")
@@ -64,19 +62,14 @@ class DetectionAPI(FastAPI):
         |coroutine|
         This method validates and downloads the image from the provided url, if the url is valid and an image is found,
         it calls :class:`core.parser.TokenParser.validate_token` to parse the image for tokens,
-        if found, it returns the token and various other information about it as a special Json response object,
+        if found, it returns the token and various other information about it in :class:`JSONResponse` object.
 
-        Parameters
-        ----------
-        image_url : str
-            The url of the image to search for tokens in, must be a valid url containing an image.
+        Parameters:
+            image_url (str): The url of the image to search for tokens in, must be a valid url containing an image.
 
-        Returns
-        -------
-        JSONResponse
-           A `fastapi.responses.JSONResponse` object
-            is returned containing the token and various other information about it
-            as a dict, which fastapi will render as a json object.
+        Returns:
+        (JSONResponse): :class:A `JSONResponse` object is returned containing the token and
+                       various other information about it as a dict, which fastapi will render as a json object.
         """
 
         try:
@@ -89,7 +82,7 @@ class DetectionAPI(FastAPI):
                         status_code=410, detail="Image resource not found."
                     )
                 image_data = await self.read_image(
-                    data_in_bytes=BytesIO(await response.read())
+                    data=BytesIO(await response.read())
                 )
 
                 data_from_image = await self.parser.validate_token(
@@ -108,20 +101,15 @@ class DetectionAPI(FastAPI):
     async def search_token_in_text(self, text: str) -> JSONResponse:
         """
         |coroutine|
-        This method calls :class:`core.parser.TokenParser.validate_token` to parse the text for tokens,
-        if found, it returns the token and various other information about it as a special Json response object,
-        which fastapi will render as a json object.
+        This method calls :meth:`TokenParser.validate_token` to parse the text for tokens,
+        if found, it returns the token and various other information about it in :class:`JSONResponse` object.
 
-        Parameters
-        ----------
-        text : str
-            The text to search for tokens in.
+        Parameters:
+            text (str): This parameter takes a text as a string, that needs to be parsed for tokens.
 
-        Returns
-        -------
-        JSONResponse
-            A `fastapi.responses.JSONResponse` object
-            is returned containing data of the token as a dict which fastapi will render as a json object.
+        Returns:
+            (JSONResponse): A :class:`JSONResponse` object is returned containing data of the token as a
+                        dict which fastapi will render as a json object.
         """
         json_data = (
             await self.parser.validate_token(text, data_parsed_from_type="text")
@@ -136,25 +124,17 @@ class DetectionAPI(FastAPI):
         This method downloads an image from url, and then uses :func:`read_image` to read the image and
         returns a json response containing the text from the image that was extracted from the function
         :func:`read_image`.
-        The json response is a special fastapi response that is rendered as a json object, this function is made to be a
-        called directly in fastapi routes.
 
-        Parameters
-        ----------
-        url : str
-            The url of the image that needs to be processed.
+        Parameters:
+            url (str): This parameter takes the url of the image that needs to be processed.
 
-        Returns
-        -------
-        JSONResponse
-            A `fastapi.responses.JSONResponse` object
-            is returned containing the text that was read from the image as a dict
-            which fastapi will render as a json object.
+        Returns:
 
-        Raises
-        ------
-        fastapi.exceptions.HTTPException
-            If the image could not be downloaded, or the url is not a valid url.
+        (JSONResponse): A `fastapi.responses.JSONResponse` object is returned containing the text
+                        that was read from the image as a dict which fastapi will render as a json object.
+
+        Raises:
+            (fastapi.exceptions.HTTPException): If the image could not be downloaded, or the url is not a valid url.
         """
         try:
             async with aiohttp.request("GET", url) as response:
