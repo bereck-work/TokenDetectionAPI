@@ -73,10 +73,10 @@ class CleanImage:
                                       converted to a numpy array. The image must be in the BytesIO format.
 
         Returns:
-        (numpy.ndarray): The image as a numpy array.
+            (numpy.ndarray): The image as a numpy array.
 
         Raises:
-        (InvalidImage): If the image is not in the BytesIO or the image has failed to be
+            (InvalidImage): If the image is not in the BytesIO or the image has failed to be
                         converted to a PIL image object.
         """
         image_binary = BytesIO()
@@ -113,4 +113,4 @@ class CleanImage:
             raise InvalidImage("The image could not be converted to a PIL image.")
 
     def __repr__(self):
-        return f"{self.__class__.__name__} <{self.__dict__}>)"
+        return f"<{self.__class__.__name__} <{self.__dict__}>)"
