@@ -48,7 +48,7 @@ class Token(BaseModel):
         return data
 
     def __repr__(self):
-        return f"<Token {self.jsonify()}>"
+        return f"<{self.__class__.__name__} {self.jsonify()}>"
 
 
 class ImageRequest(BaseModel):
